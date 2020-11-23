@@ -1,47 +1,85 @@
-const router = require('express').Router();
-const { Category, Product } = require('../../models');
+const router = require("express").Router();
+const { Category, Product } = require("../../models");
 
 // The `/api/categories` endpoint
 
-router.get('/', (req, res) => {
+router.get("/", (req, res) => {
   Category.findAll({
-    include: [Product]
+    include: [Product],
   })
-  .then((dbCategory) => {
-    res.json(dbCategory)
-    
-  }).catch((err) => {
+    .then((dbCategory) => {
+      res.json(dbCategory);
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(500).json(err);
+    });
+});
+
+router.get("/:id", (req, res) => {
+  Category.findOne({
+    include: [Product],
+    where: {
+      id: req.params.id,
+    },
+  })
+    .then((dbCategory) => {
+      res.json(dbCategory);
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(500).json(err);
+    });
+});
+
+router.post("/", (req, res) => {
+  // create a new category
+  Category.create(req.body)
+  .then((dbCategory) => res.json(dbCategory))
+  .catch((err) => {
     console.log(err);
-    res.status(500).json(err);
+    res.status(400).json(err);
   });
 });
 
-router.get('/:id', (req, res) => {
-  Category.findOne({
-    include: [Product],
+router.put("/:id", (req, res) => {
+  // update a category by its `id` value
+  Category.update(req.body, {
     where: {
       id: req.params.id,
     }
   })
   .then((dbCategory) => {
-    res.json(dbCategory)
-    
-  }).catch((err) => {
+    if (!dbCategory) {
+      res.status(404).json({ message: "No post found with this id" });
+      return;
+    }
+    res.json(dbCategory);
+  })
+  .catch((err) => {
     console.log(err);
     res.status(500).json(err);
   });
 });
 
-router.post('/', (req, res) => {
-  // create a new category
-});
-
-router.put('/:id', (req, res) => {
-  // update a category by its `id` value
-});
-
-router.delete('/:id', (req, res) => {
+router.delete("/:id", (req, res) => {
   // delete a category by its `id` value
+  Category.destroy({
+    where: {
+      id: req.params.id,
+    }
+  })
+  .then((dbCategory) => {
+    if (!dbCategory) {
+      res.status(404).json({ message: "No post found with this id" });
+      return;
+    }
+    res.json(dbCategory);
+  })
+  .catch((err) => {
+    console.log(err);
+    res.status(500).json(err);
+  });
 });
 
 module.exports = router;
